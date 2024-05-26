@@ -1,0 +1,48 @@
+LIST  @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD;
+
+SELECT $1 FROM @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD/product_coordination_suggestions.txt;
+SELECT $1 FROM @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD/sweatsuit_sizes.txt;
+SELECT $1 FROM @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD/swt_product_line.txt;
+
+CREATE OR REPLACE FILE FORMAT ZENAS_ATHLEISURE_DB.PRODUCTS.zmd_file_format_1
+RECORD_DELIMITER = ';';
+
+create view zenas_athleisure_db.products.sweatsuit_sizes as
+SELECT REPLACE($1,CHR(13)||CHR(10)) sizes_available
+FROM @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD/sweatsuit_sizes.txt
+(file_format => ZENAS_ATHLEISURE_DB.PRODUCTS.zmd_file_format_1)
+WHERE REPLACE($1,CHR(13)||CHR(10)) != '';
+
+SELECT * FROM zenas_athleisure_db.products.sweatsuit_sizes;
+
+CREATE OR REPLACE FILE FORMAT ZENAS_ATHLEISURE_DB.PRODUCTS.zmd_file_format_2
+FIELD_DELIMITER = '|'
+RECORD_DELIMITER =';'
+TRIM_SPACE = True;
+
+CREATE OR REPLACE VIEW zenas_athleisure_db.products.SWEATBAND_PRODUCT_LINE
+AS
+SELECT 
+    REPLACE($1,CHR(13)||CHR(10)) AS PRODUCT_CODE, 
+    $2 AS HEADBAND_DESCRIPTION , 
+    $3 AS WRISTBAND_DESCRIPTION
+FROM @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD/swt_product_line.txt
+(file_format => ZENAS_ATHLEISURE_DB.PRODUCTS.zmd_file_format_2);
+
+SELECT * FROM zenas_athleisure_db.products.SWEATBAND_PRODUCT_LINE;
+
+create or replace file format ZENAS_ATHLEISURE_DB.PRODUCTS.zmd_file_format_3
+FIELD_DELIMITER = '='
+RECORD_DELIMITER = '^'
+TRIM_SPACE = True;
+
+CREATE OR REPLACE VIEW zenas_athleisure_db.products.SWEATBAND_COORDINATION
+AS
+SELECT 
+    REPLACE($1,CHR(13)||CHR(10)) AS PRODUCT_CODE, 
+    $2 AS HAS_MATCHING_SWEATSUIT 
+FROM @ZENAS_ATHLEISURE_DB.PRODUCTS.UNI_KLAUS_ZMD/product_coordination_suggestions.txt
+(file_format => ZENAS_ATHLEISURE_DB.PRODUCTS.zmd_file_format_3);
+
+SELECT * FROM zenas_athleisure_db.products.SWEATBAND_COORDINATION;
+
